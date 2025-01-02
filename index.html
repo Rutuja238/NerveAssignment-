@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nerve Assignment</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .toggle-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .toggle-buttons button {
+            padding: 10px 20px;
+            border: none;
+            background-color: lightgray;
+            cursor: pointer;
+        }
+        .toggle-buttons button.active {
+            background-color: blue;
+            color: white;
+        }
+        .dropdown-container {
+            margin: 20px 0;
+        }
+        .dropdown {
+            padding: 10px;
+            font-size: 16px;
+        }
+        .cards-container {
+            display: grid;
+            grid-template-rows: repeat(auto-fill, minmax(20px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .empty-state {
+            color: gray;
+            font-size: 18px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Nerve Assignment</h1>
+
+    <!-- Toggle Buttons -->
+    <div class="toggle-buttons" id="toggle-buttons">
+        <button data-view="Bullish" class="active">Bullish</button>
+        <button data-view="Bearish">Bearish</button>
+        <button data-view="RangeBound">RangeBound</button>
+        <button data-view="Volatile">Volatile</button>
+    </div>
+
+    <!-- Date Dropdown -->
+    <div class="dropdown-container">
+        <select id="date-dropdown" class="dropdown"></select>
+    </div>
+
+    <!-- Cards Container -->
+    <div id="cards-container" class="cards-container"></div>
+
+    <!-- Empty State -->
+    <div id="empty-state" class="empty-state" style="display: none;">No strategies available for the selected date.</div>
+
+    <script>
+        // Data
+        const dateArray = ['24-Apr-2024', '02-May-2024', '09-May-2024', '31-May-2024', '21-Jun-2024'];
+        const strategyArray = [
+            { View: 'Bullish', Value: { '24-Apr-2024': ['Bull Call Spread', 'Bull Put Spread', 'Bull Put Spread'], '02-May-2024': ['Long Call'], '09-May-2024': [] } },
+            { View: 'Bearish', Value: { '24-Apr-2024': ['Bear Call Spread'], '31-May-2024': [], '21-Jun-2024': ['Strategy3', 'Strategy3'] } },
+            { View: 'RangeBound', Value: { '24-Apr-2024': ['Short Straddle', 'Short Strangle'], '21-Jun-2024': ['Iron Condor'] } },
+            { View: 'Volatile', Value: { '02-May-2024': ['Long Straddle', 'Strategy1'], '31-May-2024': [] } },
+        ];
+
+        // DOM Elements
+        const toggleButtons = document.getElementById('toggle-buttons');
+        const dateDropdown = document.getElementById('date-dropdown');
+        const cardsContainer = document.getElementById('cards-container');
+        const emptyState = document.getElementById('empty-state');
+
+        let selectedView = 'Bullish';
+        let selectedDate = dateArray[0];
+
+        // Initialize Date Dropdown
+        dateArray.forEach(date => {
+            const option = document.createElement('option');
+            option.value = date;
+            option.textContent = date;
+            dateDropdown.appendChild(option);
+        });
+
+        // Render Cards
+        const renderCards = () => {
+            cardsContainer.innerHTML = '';
+            const viewData = strategyArray.find(view => view.View === selectedView);
+            const strategies = viewData?.Value[selectedDate] || [];
+
+            if (strategies.length === 0) {
+                emptyState.style.display = 'block';
+                cardsContainer.style.display = 'none';
+            } else {
+                emptyState.style.display = 'none';
+                cardsContainer.style.display = 'grid';
+
+                const strategyCount = strategies.reduce((acc, strategy) => {
+                    acc[strategy] = (acc[strategy] || 0) + 1;
+                    return acc;
+                }, {});
+
+                for (const [strategy, count] of Object.entries(strategyCount)) {
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    card.innerHTML = `<h3>${strategy}</h3><p>${count} ${count > 1 ? 'Strategies' : 'Strategy'}</p>`;
+                    cardsContainer.appendChild(card);
+                }
+            }
+        };
+
+        // Event Listeners
+        toggleButtons.addEventListener('click', (e) => {
+            if (e.target.tagName === 'BUTTON') {
+                selectedView = e.target.dataset.view;
+
+                document.querySelectorAll('.toggle-buttons button').forEach(btn => btn.classList.remove('active'));
+                e.target.classList.add('active');
+
+                renderCards();
+            }
+        });
+
+        dateDropdown.addEventListener('change', (e) => {
+            selectedDate = e.target.value;
+            renderCards();
+        });
+
+        // Initial Render
+        renderCards();
+    </script>
+
+</body>
+</html>
