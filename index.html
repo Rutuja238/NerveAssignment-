@@ -8,75 +8,91 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 20px;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            text-align: center;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 500px;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            font-size: 24px;
+            color: #333;
         }
 
         .toggle-buttons {
             display: flex;
-            gap: 10px;
+            justify-content: space-between;
+            margin-bottom: 20px;
         }
 
         .toggle-buttons button {
-            padding: 10px 20px;
+            flex: 1;
+            padding: 10px 0;
+            margin: 0 5px;
             border: none;
-            background-color: lightgray;
+            border-radius: 5px;
+            background-color: #e0e0e0;
             cursor: pointer;
+            font-size: 14px;
+            color: #333;
         }
 
         .toggle-buttons button.active {
-            background-color: blue;
-            color: white;
+            background-color: #007bff;
+            color: #fff;
         }
 
         .dropdown-container {
-            margin: 20px 0;
+            margin-bottom: 20px;
         }
 
         .dropdown {
+            width: 100%;
             padding: 10px;
-            font-size: 16px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
         }
 
         .cards-container {
-            display: flex;
-            flex-direction: column;
-            /* Stacks items vertically */
-            align-items: center;
-            /* Centers the cards horizontally */
+            display: grid;
+            grid-template-columns: 1fr;
             gap: 15px;
-            /* Adds space between cards */
+            text-align: center;
         }
 
         .card {
-            width: 80%;
-            /* Adjusts card width to be smaller and responsive */
-            max-width: 400px;
-            /* Sets a maximum width for larger screens */
             padding: 15px;
-            border: 1px solid #ccc;
-            border-radius: 10px;
-            /* Rounded corners */
-            text-align: center;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            /* Subtle shadow */
-            background-color: #f9f9f9;
-            /* Light background */
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #fafafa;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             transition: transform 0.2s, box-shadow 0.2s;
-            /* Hover effect */
         }
 
         .card:hover {
-            transform: translateY(-5px);
-            /* Slight lift on hover */
-            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
-            /* Enhanced shadow */
+            transform: translateY(-3px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
         }
 
         .card h3 {
             font-size: 16px;
-            margin-bottom: 8px;
+            margin-bottom: 5px;
             color: #333;
-            /* Darker text for readability */
         }
 
         .card p {
@@ -87,45 +103,113 @@
 
         .empty-state {
             color: gray;
-            font-size: 18px;
+            font-size: 16px;
             text-align: center;
+            margin-top: 20px;
         }
     </style>
 </head>
 
 <body>
+    <div class="container">
+        <h1>Nerve Assignment</h1>
 
-    <h1>Nerve Assignment</h1>
+        <!-- Toggle Buttons -->
+        <div class="toggle-buttons" id="toggle-buttons">
+            <button data-view="Bullish" class="active">Bullish</button>
+            <button data-view="Bearish">Bearish</button>
+            <button data-view="RangeBound">RangeBound</button>
+            <button data-view="Volatile">Volatile</button>
+        </div>
 
-    <!-- Toggle Buttons -->
-    <div class="toggle-buttons" id="toggle-buttons">
-        <button data-view="Bullish" class="active">Bullish</button>
-        <button data-view="Bearish">Bearish</button>
-        <button data-view="RangeBound">RangeBound</button>
-        <button data-view="Volatile">Volatile</button>
-    </div>
+        <!-- Date Dropdown -->
+        <div class="dropdown-container">
+            <select id="date-dropdown" class="dropdown"></select>
+        </div>
 
-    <!-- Date Dropdown -->
-    <div class="dropdown-container">
-        <select id="date-dropdown" class="dropdown"></select>
-    </div>
+        <!-- Cards Container -->
+        <div id="cards-container" class="cards-container"></div>
 
-    <!-- Cards Container -->
-    <div id="cards-container" class="cards-container"></div>
-
-    <!-- Empty State -->
-    <div id="empty-state" class="empty-state" style="display: none;">No strategies available for the selected date.
+        <!-- Empty State -->
+        <div id="empty-state" class="empty-state" style="display: none;">
+            No strategies available for the selected date.
+        </div>
     </div>
 
     <script>
-        // Data
         const dateArray = ['24-Apr-2024', '02-May-2024', '09-May-2024', '31-May-2024', '21-Jun-2024'];
         const strategyArray = [
-            { View: 'Bullish', Value: { '24-Apr-2024': ['Bull Call Spread', 'Bull Put Spread', 'Bull Put Spread'], '02-May-2024': ['Long Call'], '09-May-2024': [] } },
-            { View: 'Bearish', Value: { '24-Apr-2024': ['Bear Call Spread'], '31-May-2024': [], '21-Jun-2024': ['Strategy3', 'Strategy3'] } },
-            { View: 'RangeBound', Value: { '24-Apr-2024': ['Short Straddle', 'Short Strangle'], '21-Jun-2024': ['Iron Condor'] } },
-            { View: 'Volatile', Value: { '02-May-2024': ['Long Straddle', 'Strategy1'], '31-May-2024': [] } },
+            {
+                'View': 'Bullish',
+                'Value': {
+                    '24-Apr-2024': [
+                        'Bull Call Spread', 'Bull Put Spread', 'Bull Put Spread', 'Long Call',
+                        'Bull Put Spread', 'Bull Call Spread', 'Strategy1', 'Bull Call Spread',
+                        'Strategy1', 'Strategy1', 'SpreadStrategy', 'Bull Call Spread'
+                    ],
+                    '02-May-2024': [
+                        'Bull Call Spread', 'Bull Call Spread', 'Bull Put Spread', 'Long Call',
+                        'Long Call', 'Long Call', 'Bull Put Spread', 'Bull Call Spread', 'Strategy1',
+                        'Bull Call Spread', 'Strategy2', 'Strategy1', 'Strategy2', 'Bull Call Spread'
+                    ],
+                    '09-May-2024': [
+                        'Strategy Put', 'Strategy Call', 'Strategy Call', 'Strategy Call', 'Strategy Put'
+                    ],
+                }
+            },
+            {
+                'View': 'Bearish',
+                'Value': {
+                    '24-Apr-2024': [
+                        'Bear Call Spread', 'Bear Call Spread', 'Bear Call Spread', 'Long Put',
+                        'Long Put', 'Long Put', 'Bear Call Spread'
+                    ],
+                    '31-May-2024': [
+                        'Long Put', 'Long Put', 'Long Put', 'Long Put', 'Long Put'
+                    ],
+                    '21-Jun-2024': [
+                        'Strategy3', 'Strategy3', 'Bear Put Spread', 'Strategy3', 'Long Put', 'Long Put'
+                    ],
+                }
+            },
+            {
+                'View': 'RangeBound',
+                'Value': {
+                    '24-Apr-2024': [
+                        'Short Straddle', 'Short Strangle', 'Short Strangle', 'Iron Butterfly',
+                        'Short Strangle', 'Short Straddle', 'Strategy1', 'Short Straddle',
+                        'Strategy1', 'Strategy1', 'SpreadStrategy', 'Short Straddle'
+                    ],
+                    '02-May-2024': [
+                        'Short Straddle', 'Short Straddle', 'Short Strangle', 'Iron Butterfly',
+                        'Iron Butterfly', 'Iron Butterfly', 'Short Strangle', 'Short Straddle',
+                        'Strategy1', 'Short Straddle', 'Strategy2', 'Strategy1', 'Strategy2', 'Short Straddle'
+                    ],
+                    '21-Jun-2024': [
+                        'Iron Condor', 'Iron Butterfly', 'Iron Butterfly', 'Iron Butterfly', 'Iron Condor'
+                    ],
+                }
+            },
+            {
+                'View': 'Volatile',
+                'Value': {
+                    '02-May-2024': [
+                        'Long Straddle', 'Long Strangle', 'Long Strangle', 'Long Strangle',
+                        'Long Straddle', 'Strategy1', 'Long Straddle', 'Strategy1', 'Strategy1',
+                        'Spread-Strategy', 'Long Straddle'
+                    ],
+                    '09-May-2024': [
+                        'Long Straddle', 'Long Straddle', 'Long Strangle', 'Long Strangle',
+                        'Long Straddle', 'Strategy1', 'Long Straddle', 'Strategy2', 'Strategy1',
+                        'Strategy2', 'Long Straddle'
+                    ],
+                    '31-May-2024': [
+                        'Long Straddle', 'Long Strangle', 'Long Strangle', 'Long Strangle', 'Long Straddle'
+                    ],
+                }
+            }
         ];
+
 
         // DOM Elements
         const toggleButtons = document.getElementById('toggle-buttons');
@@ -191,7 +275,6 @@
         // Initial Render
         renderCards();
     </script>
-
 </body>
 
 </html>
